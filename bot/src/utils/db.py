@@ -3,6 +3,7 @@ from tinydb import Query
 import asyncio
 from src.models.user import User
 from src.models.tender import Tender, Proposal
+from datetime import datetime
 
 db = TinyDB(
     "database.json",
@@ -55,11 +56,11 @@ async def get_users_count() -> int:
 async def save_user(user: User):
     async with user_lock:
         def _write():
+            user.updated_at = datetime.now().isoformat() # <-- Обновляем время
             users.upsert(
                 user.model_dump(),
                 UserQ.telegram_id == user.telegram_id
             )
-
         await asyncio.to_thread(_write)
 
 #Tender repository
@@ -100,11 +101,11 @@ async def get_tender(tender_id: int) -> Tender | None:
 async def save_tender(tender: Tender):
     async with tender_lock:
         def _write():
+            tender.updated_at = datetime.now().isoformat() # <-- Обновляем время
             tenders.upsert(
                 tender.model_dump(),
                 TenderQ.tender_id == tender.tender_id
             )
-
         await asyncio.to_thread(_write)
 
 

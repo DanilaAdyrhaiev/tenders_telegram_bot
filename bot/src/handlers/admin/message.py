@@ -1,89 +1,102 @@
+import logging
 from aiogram import Router, F, types
-from aiogram.filters import Command
-from typing import Optional, List
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import StateFilter
 from aiogram.client.bot import Bot
 from aiogram.types import Message
+import html
 
 from src.models.user import User
 from src.utils.config import settings
 from src.utils.filters import isAdminFilter
-from src.utils.db import get_users
-from src.keyboards.admin.inline import get_users_list_keyboard, get_participate_keyboard
-from src.keyboards.admin.inline import get_confirm_tender_keyboard, get_tenders_menu
-from src.states.admin_states import CreateTender
-from src.utils.db import get_tender, save_tender
-from src.states.admin_states import EditTender
+from src.utils.db import get_users, get_tender, save_tender
+from src.keyboards.admin.inline import (
+    get_users_list_keyboard, get_participate_keyboard, 
+    get_confirm_tender_keyboard, get_tenders_menu
+)
+from src.states.admin_states import CreateTender, EditTender
+from src.utils.lexicon import TEXTS
 
+logger = logging.getLogger(__name__)
 router = Router()
 
-#ЮЗЕРЫ
 @router.message(F.text == "👤 Участники", isAdminFilter())
-async def admin_view_participants(message: types.Message):
+async def admin_view_participants(message: types.Message, user: User):
+    logger.info(f"Админ {user.telegram_id} открыл список участников.")
     all_users = await get_users()
     filtered_users = [
-    u for u in all_users 
-    if u.telegram_id != message.from_user.id and not u.is_admin and not u.is_root]
+        u for u in all_users 
+        if u.telegram_id != message.from_user.id and not u.is_admin and not u.is_root
+    ]
+    
     if not filtered_users or len(filtered_users) == 0:
-        await message.answer("👤 В базе пока нет других участников.")
+        await message.answer(TEXTS["messages"]["admin"]["users_empty"])
         return
     
     await message.answer(
-        "👤 Список участников проекта: \nВыберите пользователя для управления:",
+        TEXTS["messages"]["admin"]["users_list"],
         reply_markup=get_users_list_keyboard(filtered_users),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
-#ТЕНДЕРЫ
 @router.message(F.text == "📢 Тендеры", isAdminFilter())
-async def admin_open_tenders_menu(message: types.Message):
+async def admin_open_tenders_menu(message: types.Message, user: User):
+    logger.info(f"Админ {user.telegram_id} открыл меню управления тендерами.")
     await message.answer(
-        "📢 Управление тендерамиn\nВыберите нужное действие в меню ниже:",
+        TEXTS["messages"]["admin"]["tenders_menu"],
         reply_markup=get_tenders_menu(),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 @router.message(CreateTender.waiting_for_text, F.text, isAdminFilter())
-async def process_tender_text(message: types.Message, state: FSMContext):
-    await state.update_data(tender_text=message.text)
+async def process_tender_text(message: types.Message, state: FSMContext, user: User):
+    safe_text = html.escape(message.text)
+    await state.update_data(tender_text=safe_text)
     await state.set_state(CreateTender.waiting_for_confirmation)
-    preview_text = f"📋 Проверьте информацию перед публикацией:\n\n{message.text}"
-    await message.answer(preview_text, reply_markup=get_confirm_tender_keyboard())
+    
+    logger.info(f"Админ {user.telegram_id} ввел текст для нового тендера.")
+    preview_text = TEXTS["messages"]["admin"]["preview_publication"].format(text=safe_text)
+    await message.answer(preview_text, reply_markup=get_confirm_tender_keyboard(), parse_mode="HTML")
 
 @router.message(EditTender.waiting_for_new_text, F.text, isAdminFilter())
-async def save_new_tender_text(message: types.Message, state: FSMContext, bot: Bot):
+async def save_new_tender_text(message: types.Message, state: FSMContext, bot: Bot, user: User):
     data = await state.get_data()
     tender_id = data.get("edit_tender_id")
     
     if not tender_id:
+        logger.warning(f"Ошибка стейта при редактировании тендера админом {user.telegram_id}")
         await state.clear()
         return
         
     tender = await get_tender(tender_id)
     if not tender:
-        await message.answer("❌ Ошибка: Тендер не найден.")
+        logger.error(f"Админ {user.telegram_id} пытался отредактировать несуществующий тендер #{tender_id}")
+        await message.answer(TEXTS["messages"]["admin"]["tender_not_found"])
         await state.clear()
         return
         
-    # 1. Обновляем текст в базе данных
-    tender.text = message.text
+    safe_text = html.escape(message.text)
+    tender.text = safe_text
     await save_tender(tender)
+    logger.info(f"Админ {user.telegram_id} успешно обновил текст в БД для тендера #{tender_id}")
     
-    # 2. Пытаемся обновить пост в канале (если он там есть)
     if tender.channel_message_id:
         try:
             bot_info = await bot.get_me()
-            channel_post = f"💼 Тендер №{tender.tender_id}\n\n{tender.text}"
+            channel_post = TEXTS["messages"]["user"]["channel_post"].format(
+                tender_id=tender.tender_id, text=tender.text
+            )
             
             await bot.edit_message_text(
                 chat_id=settings.CHANNEL_ID,
                 message_id=tender.channel_message_id,
                 text=channel_post,
-                reply_markup=get_participate_keyboard(tender.tender_id, bot_info.username)
+                reply_markup=get_participate_keyboard(tender.tender_id, bot_info.username),
+                parse_mode="HTML"
             )
         except Exception as e:
-            await message.answer(f"⚠️ Текст в базе обновлен, но пост в канале изменить не удалось (возможно, он был удален): {e}")
+            logger.error(f"Ошибка редактирования поста тендера #{tender_id} в канале: {e}")
+            await message.answer(TEXTS["messages"]["admin"]["edit_channel_error"].format(error=html.escape(str(e))))
             
-    await message.answer(f"✅ Текст тендера #{tender_id} успешно обновлен!")
+    await message.answer(TEXTS["messages"]["admin"]["edit_success"].format(tender_id=tender_id), parse_mode="HTML")
     await state.clear()

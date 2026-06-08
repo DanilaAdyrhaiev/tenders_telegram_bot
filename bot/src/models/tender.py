@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from .user import User
+from datetime import datetime
 
 class Proposal(BaseModel):
     user_id: int                  # ID пользователя в Telegram
@@ -13,6 +14,9 @@ class Tender(BaseModel):
     proposals: Optional[List[Proposal]] = [] # Список всех предложений по этому тендеру
     winner: Optional[User] = None
     channel_message_id: Optional[int] = None
+
+    created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now().isoformat())
 
     def redis_key(self) -> str:
         return f"tender:{self.tender_id}"
