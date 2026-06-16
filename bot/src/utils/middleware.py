@@ -29,7 +29,7 @@ class UserMiddleware(BaseMiddleware):
             user_obj = User(
                 telegram_id=from_user.id,
                 username=from_user.username,
-                nickname=f"Пользователь #{users_count + 1}",
+                nickname=TEXTS["messages"]["common"]["default_nickname"].format(count=users_count + 1),
                 is_admin=False,
                 is_banned=False
             )

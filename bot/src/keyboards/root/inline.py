@@ -30,7 +30,9 @@ def get_user_manage_keyboard(user_id: int, is_admin: bool, is_banned: bool) -> I
     ban_text = TEXTS["buttons"]["admin"]["unban"] if is_banned else TEXTS["buttons"]["admin"]["ban"]
     admin_text = TEXTS["buttons"]["root"]["remove_admin"] if is_admin else TEXTS["buttons"]["root"]["make_admin"]
     
+    
     builder.button(text=ban_text, callback_data=f"root_toggle_ban:{user_id}")
+    builder.button(text=TEXTS["buttons"]["admin"]["rename_user"], callback_data=f"rename_user:{user_id}")
     builder.button(text=admin_text, callback_data=f"root_toggle_admin:{user_id}")
     builder.button(text=TEXTS["buttons"]["admin"]["back_to_users"], callback_data="root_back_to_users_list")
     

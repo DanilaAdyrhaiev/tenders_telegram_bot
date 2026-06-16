@@ -54,7 +54,7 @@ async def root_download_db(message: types.Message):
     excel_path = "database.xlsx"
     
     if not os.path.exists(db_path):
-        await message.answer("❌ Файл базы данных не найден.", parse_mode="HTML")
+        await message.answer(TEXTS["messages"]["root"]["db_not_found"], parse_mode="HTML")
         return
         
     # Генерируем Excel-файл

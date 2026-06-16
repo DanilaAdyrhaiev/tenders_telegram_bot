@@ -105,7 +105,7 @@ curl -fsSL https://get.docker.com | sh
 ---
 # 🚀 Запуск бота
 Откройте терминал в папке проекта и выполните:
-```
+``` 
 docker compose up --build -d
 ```
 ---

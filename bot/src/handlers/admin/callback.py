@@ -4,6 +4,7 @@ from aiogram import Router, F, types
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.client.bot import Bot
+import math
 
 from src.models.user import User
 from src.models.tender import Tender
@@ -16,7 +17,7 @@ from src.keyboards.admin.inline import (
     get_tender_manage_keyboard
 )
 from src.utils.filters import TargetUserFilter, isAdminFilter
-from src.states.admin_states import CreateTender, EditTender
+from src.states.admin_states import CreateTender, EditTender, EditUser
 from src.utils.config import settings
 from src.utils.lexicon import TEXTS
 
@@ -32,8 +33,7 @@ def get_user_profile_text(target_user: User, is_updated: bool = False) -> str:
         title=title,
         nickname=html.escape(target_user.nickname),
         telegram_id=target_user.telegram_id,
-        username=html.escape(target_user.username or 'отсутствует'),
-        is_admin=is_admin_str,
+        username=html.escape(target_user.username or TEXTS["messages"]["profile"]["no_username"], quote=False),        is_admin=is_admin_str,
         status=status
     )
 
@@ -187,12 +187,38 @@ async def view_tender_proposals(callback: types.CallbackQuery):
     tender_id = int(parts[1])
     page = int(parts[2])
     tender = await get_tender(tender_id)
+    
     if not tender or not tender.proposals:
         await callback.answer(TEXTS["messages"]["admin"]["proposals_empty"], show_alert=True)
         return
+
+    # --- ФОРМИРУЕМ КРАСИВЫЙ ТЕКСТ СО СТАВКАМИ ---
+    per_page = 5
+    total_pages = math.ceil(len(tender.proposals) / per_page) or 1
+    page = max(1, min(page, total_pages))
+
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    proposals_on_page = tender.proposals[start_idx:end_idx]
+
+    proposals_text_blocks = []
+    for idx, prop in enumerate(proposals_on_page, start=start_idx + 1):
+        user = await get_user(prop.user_id)
+        nickname = html.escape(user.nickname, quote=False) if user else f"ID {prop.user_id}"
+        safe_prop = html.escape(prop.text, quote=False)
+        
+        # Красивый формат вывода
+        proposals_text_blocks.append(f"<b>{idx}. {nickname}</b>\n└ 💬 <i>{safe_prop}</i>")
+
+    joined_proposals = "\n\n".join(proposals_text_blocks)
+    
+    base_text = TEXTS["messages"]["admin"]["proposals_list"].format(tender_id=tender_id)
+    final_text = f"{base_text}\n\n{joined_proposals}"
+    # ---------------------------------------------
+
     await callback.message.edit_text(
-        TEXTS["messages"]["admin"]["proposals_list"].format(tender_id=tender_id),
-        reply_markup=get_proposals_list_keyboard(tender_id, tender.proposals, page=page),
+        final_text,
+        reply_markup=await get_proposals_list_keyboard(tender_id, tender.proposals, page=page),
         parse_mode="HTML"
     )
 
@@ -213,7 +239,7 @@ async def view_single_proposal(callback: types.CallbackQuery):
     text = TEXTS["messages"]["admin"]["proposal_view"].format(
         nickname=html.escape(user.nickname),
         username=html.escape(user.username or "отсутствует"),
-        text=html.escape(proposal.text)
+        text=html.escape(proposal.text, quote=False)
     )
     
     await callback.message.edit_text(
@@ -358,3 +384,15 @@ async def cancel_tender_edit(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text(
         text, reply_markup=get_tender_manage_keyboard(tender.tender_id, proposals_count, tender.is_active), parse_mode="HTML"
     )
+
+@router.callback_query(F.data.startswith("rename_user:"), isAdminFilter(), TargetUserFilter())
+async def process_rename_user_request(callback: types.CallbackQuery, target_user: User, state: FSMContext):
+    await state.update_data(target_user_id=target_user.telegram_id)
+    await state.set_state(EditUser.waiting_for_new_name)
+    
+    text = TEXTS["messages"]["admin"]["enter_new_name"].format(
+        nickname=html.escape(target_user.nickname)
+    )
+    
+    await callback.message.edit_text(text, parse_mode="HTML")
+    await callback.answer()

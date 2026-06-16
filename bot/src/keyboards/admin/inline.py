@@ -7,6 +7,7 @@ import math
 from src.models.user import User
 from src.models.tender import Tender, Proposal
 from src.utils.lexicon import TEXTS
+from src.utils.db import get_user
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +31,9 @@ def get_users_list_keyboard(users: Optional[List[User]]) -> InlineKeyboardMarkup
 
 def get_user_manage_keyboard(user_id: int, is_banned: bool) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    
     ban_text = TEXTS["buttons"]["admin"]["unban"] if is_banned else TEXTS["buttons"]["admin"]["ban"]
     
+    builder.button(text=TEXTS["buttons"]["admin"]["rename_user"], callback_data=f"rename_user:{user_id}")
     builder.button(text=ban_text, callback_data=f"toggle_ban:{user_id}")
     builder.button(text=TEXTS["buttons"]["admin"]["back_to_users"], callback_data="back_to_users_list")
     
@@ -95,7 +96,7 @@ def get_tender_manage_keyboard(tender_id: int, proposals_count: int, is_active: 
     builder.adjust(1)
     return builder.as_markup()
 
-def get_proposals_list_keyboard(tender_id: int, proposals: List[Proposal], page: int = 1, per_page: int = 5) -> InlineKeyboardMarkup:
+async def get_proposals_list_keyboard(tender_id: int, proposals: List[Proposal], page: int = 1, per_page: int = 5) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     total_pages = math.ceil(len(proposals) / per_page) or 1
     page = max(1, min(page, total_pages))
@@ -105,8 +106,9 @@ def get_proposals_list_keyboard(tender_id: int, proposals: List[Proposal], page:
     proposals_on_page = proposals[start_idx:end_idx]
     
     for prop in proposals_on_page:
-        short_text = prop.text[:15] + "..." if len(prop.text) > 15 else prop.text
-        builder.button(text=f"👤 {prop.user_id} | {short_text}", callback_data=f"view_single_prop:{tender_id}:{prop.user_id}")
+        user = await get_user(prop.user_id)
+        nickname = user.nickname if user else f"ID {prop.user_id}"
+        builder.button(text=f"👤 {nickname}", callback_data=f"view_single_prop:{tender_id}:{prop.user_id}")
     
     builder.adjust(1)
     

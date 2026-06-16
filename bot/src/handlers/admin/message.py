@@ -9,12 +9,12 @@ import html
 from src.models.user import User
 from src.utils.config import settings
 from src.utils.filters import isAdminFilter
-from src.utils.db import get_users, get_tender, save_tender
+from src.utils.db import get_users, get_tender, save_tender, get_user, save_user
 from src.keyboards.admin.inline import (
     get_users_list_keyboard, get_participate_keyboard, 
     get_confirm_tender_keyboard, get_tenders_menu
 )
-from src.states.admin_states import CreateTender, EditTender
+from src.states.admin_states import CreateTender, EditTender, EditUser
 from src.utils.lexicon import TEXTS
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ async def admin_open_tenders_menu(message: types.Message, user: User):
 
 @router.message(CreateTender.waiting_for_text, F.text, isAdminFilter())
 async def process_tender_text(message: types.Message, state: FSMContext, user: User):
-    safe_text = html.escape(message.text)
+    safe_text = html.escape(message.text, quote=False)
     await state.update_data(tender_text=safe_text)
     await state.set_state(CreateTender.waiting_for_confirmation)
     
@@ -75,7 +75,7 @@ async def save_new_tender_text(message: types.Message, state: FSMContext, bot: B
         await state.clear()
         return
         
-    safe_text = html.escape(message.text)
+    safe_text = html.escape(message.text, quote=False)
     tender.text = safe_text
     await save_tender(tender)
     logger.info(f"Админ {user.telegram_id} успешно обновил текст в БД для тендера #{tender_id}")
@@ -99,4 +99,24 @@ async def save_new_tender_text(message: types.Message, state: FSMContext, bot: B
             await message.answer(TEXTS["messages"]["admin"]["edit_channel_error"].format(error=html.escape(str(e))))
             
     await message.answer(TEXTS["messages"]["admin"]["edit_success"].format(tender_id=tender_id), parse_mode="HTML")
+    await state.clear()
+
+@router.message(StateFilter(EditUser.waiting_for_new_name), F.text, isAdminFilter())
+async def process_new_user_name(message: types.Message, state: FSMContext, user: User):
+    data = await state.get_data()
+    target_user_id = data.get("target_user_id")
+    
+    target_user = await get_user(target_user_id)
+    if target_user:
+        target_user.nickname = html.escape(message.text, quote=False)
+        await save_user(target_user)
+        
+        success_text = TEXTS["messages"]["admin"]["rename_success"].format(
+            nickname=target_user.nickname
+        )
+        await message.answer(success_text, parse_mode="HTML")
+    else:
+        error_text = TEXTS["messages"]["admin"]["rename_error"]
+        await message.answer(error_text)
+        
     await state.clear()

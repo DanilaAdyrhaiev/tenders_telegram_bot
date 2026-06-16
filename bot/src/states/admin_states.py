@@ -6,3 +6,6 @@ class CreateTender(StatesGroup):
 
 class EditTender(StatesGroup):
     waiting_for_new_text = State()
+
+class EditUser(StatesGroup):
+    waiting_for_new_name = State()

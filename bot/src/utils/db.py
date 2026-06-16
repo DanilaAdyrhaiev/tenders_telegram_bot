@@ -124,16 +124,16 @@ async def add_proposal(tender_id: int, proposal: Proposal):
     async with tender_lock:
         def _write():
             tender = tenders.get(TenderQ.tender_id == tender_id)
-
             if not tender:
                 return
-
             try:
                 tender_obj = Tender(**tender)
-
-                # важно: сохраняем как dict, а не Pydantic объект
-                tender_obj.proposals.append(proposal.model_dump())
-
+                existing_prop = next((p for p in tender_obj.proposals if p.user_id == proposal.user_id), None)
+                if existing_prop:
+                    existing_prop.text = proposal.text
+                else:
+                    tender_obj.proposals.append(proposal)
+                    
                 tenders.update(
                     tender_obj.model_dump(),
                     TenderQ.tender_id == tender_id

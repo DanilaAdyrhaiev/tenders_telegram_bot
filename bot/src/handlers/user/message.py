@@ -8,7 +8,7 @@ from aiogram.client.bot import Bot
 
 from src.models.user import User
 from src.models.tender import Proposal
-from src.utils.db import get_tender, add_proposal
+from src.utils.db import get_tender, add_proposal, get_users
 from src.states.user_states import UserStates
 from src.keyboards.user.inline import get_user_tender_keyboard
 from src.utils.lexicon import TEXTS
@@ -48,8 +48,12 @@ async def cmd_start(message: Message, user: User, state: FSMContext, command: Co
             proposals_text = TEXTS["messages"]["user"]["proposals_empty"]
 
         safe_tender_text = html.escape(tender.text)
-        text = f"📄 <b>Тендер #{tender.tender_id}</b>\n\n{safe_tender_text}{proposals_text}"
-        
+        text = TEXTS["messages"]["user"]["tender_card_title"].format(
+            tender_id=tender.tender_id,
+            text=safe_tender_text,
+            proposals=proposals_text
+        )
+
         await message.answer(
             text, 
             reply_markup=get_user_tender_keyboard(tender_id), 
@@ -88,20 +92,44 @@ async def process_proposal_text(message: types.Message, state: FSMContext, bot: 
     await state.clear()
 
     unique_users = set(p.user_id for p in tender.proposals)
+    all_users = await get_users()
+    admin_ids = [u.telegram_id for u in all_users if u.is_admin or u.is_root]
+    unique_users.update(admin_ids)
+    
     unique_users.discard(user.telegram_id) 
 
-    safe_prop_text = html.escape(message.text)
+    safe_prop_text = html.escape(message.text, quote=False)
 
     for uid in unique_users:
         try:
+            # Базовый текст для всех
             notify_text = TEXTS["notifications"]["new_proposal"].format(
                 tender_id=tender_id, user_id=user.telegram_id, text=safe_prop_text
             )
-            await bot.send_message(
-                chat_id=uid,
-                text=notify_text,
-                reply_markup=get_user_tender_keyboard(tender_id),
-                parse_mode="HTML"
-            )
+
+            # Разделяем логику для админов и обычных участников
+            if uid in admin_ids:
+                # Дополняем текст для администратора
+                username_str = f" (@{html.escape(user.username)})" if user.username else ""
+                admin_addition = TEXTS["notifications"]["admin_addition"].format(
+                    nickname=html.escape(user.nickname, quote=False),
+                    username_str=username_str,
+                    telegram_id=user.telegram_id
+                )
+                
+                await bot.send_message(
+                    chat_id=uid,
+                    text=notify_text + admin_addition,
+                    parse_mode="HTML"
+                    # Кнопку не передаем
+                )
+            else:
+                # Отправляем стандартное уведомление с кнопкой для остальных участников
+                await bot.send_message(
+                    chat_id=uid,
+                    text=notify_text,
+                    reply_markup=get_user_tender_keyboard(tender_id),
+                    parse_mode="HTML"
+                )
         except Exception as e:
             logger.error(f"Не удалось отправить уведомление о ставке участнику {uid}: {e}")

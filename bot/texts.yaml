@@ -23,6 +23,7 @@ buttons:
     unban: "🟢 Разбанить"
     back_to_users: "⬅️ К списку участников"
     back_to_tender: "⬅️ Назад к тендеру"
+    rename_user: "✏️ Изменить имя"
 
   root:
     users_menu: "👥 Участники"
@@ -44,6 +45,7 @@ messages:
     no_rights: "❌ У вас нет прав для этого действия."
     user_not_found: "❌ Пользователь не найден в базе."
     banned_alert: "Вы заблокированы в этом боте."
+    default_nickname: "Пользователь #{count}"
 
   profile:
     status_active: "✅ Активен"
@@ -60,6 +62,7 @@ messages:
       • <b>Юзернейм:</b> @{username}
       • <b>Администратор:</b> {is_admin}
       • <b>Статус:</b> {status}
+    no_username: "отсутствует"
 
   admin:
     users_empty: "👤 В базе пока нет других участников."
@@ -76,6 +79,9 @@ messages:
     status_active: "🟢 Активен"
     status_closed: "🔴 Закрыт"
     winner_text_html: "\n<b>🏆 Победитель:</b> {nickname}"
+    enter_new_name: "📝 Введите новое имя для пользователя <b>{nickname}</b>:"
+    rename_success: "✅ Имя пользователя успешно изменено на <b>{nickname}</b>!"
+    rename_error: "❌ Ошибка: пользователь не найден."
     
     tender_card_html: |
       📄 <b>Тендер #{tender_id}</b>
@@ -123,7 +129,8 @@ messages:
     db_downloaded: "📁 <b>Файл базы данных (database.json)</b>"
     db_downloaded_excel: "📊 <b>Excel-версия базы данных</b>\nОтлично подходит для анализа и построения сводных таблиц."
     db_download_error: "❌ Ошибка при скачивании базы данных."
-  
+    db_not_found: "❌ Файл базы данных не найден."
+
   user:
     start_default: "Добрый день, {nickname}!\nЯ бот для участия в тендерах."
     invalid_link: "❌ Неверная ссылка на тендер."
@@ -140,6 +147,8 @@ messages:
 
       {text}
 
+    tender_card_title: "📄 <b>Тендер #{tender_id}</b>\n\n{text}{proposals}"
+
 # ==========================================
 # УВЕДОМЛЕНИЯ (Рассылки)
 # ==========================================
@@ -151,6 +160,12 @@ notifications:
     {text}
 
     Вы можете перебить ставку!
+
+  admin_addition: |
+
+    ℹ️ <b>Информация об участнике:</b>
+    👤 Имя: {nickname}{username_str}
+    🆔 ID: <code>{telegram_id}</code>
     
   winner_congrats: |
     🎉 <b>Поздравляем!</b>
