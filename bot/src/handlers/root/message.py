@@ -30,7 +30,7 @@ async def get_root(message: Message, user: User):
         reply_markup=get_root_reply_menu()
     )
 
-@router.message(F.text == "👥 Участники", IsRootFilter())
+@router.message(F.text == TEXTS["buttons"]["root"]["users_menu"], IsRootFilter())
 async def view_participants(message: types.Message):    
     logger.info(f"Root {message.from_user.id} запросил список участников.")
     all_users = await get_users()

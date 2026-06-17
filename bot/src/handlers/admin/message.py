@@ -20,7 +20,7 @@ from src.utils.lexicon import TEXTS
 logger = logging.getLogger(__name__)
 router = Router()
 
-@router.message(F.text == "👤 Участники", isAdminFilter())
+@router.message(F.text == TEXTS["buttons"]["admin"]["users_menu"], isAdminFilter())
 async def admin_view_participants(message: types.Message, user: User):
     logger.info(f"Админ {user.telegram_id} открыл список участников.")
     all_users = await get_users()
@@ -39,7 +39,7 @@ async def admin_view_participants(message: types.Message, user: User):
         parse_mode="HTML"
     )
 
-@router.message(F.text == "📢 Тендеры", isAdminFilter())
+@router.message(F.text == TEXTS["buttons"]["admin"]["tenders_menu"], isAdminFilter())
 async def admin_open_tenders_menu(message: types.Message, user: User):
     logger.info(f"Админ {user.telegram_id} открыл меню управления тендерами.")
     await message.answer(

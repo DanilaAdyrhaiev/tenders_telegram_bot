@@ -87,7 +87,8 @@ def get_tender_manage_keyboard(tender_id: int, proposals_count: int, is_active: 
     
     if is_active:
         builder.button(text=TEXTS["buttons"]["admin"]["edit_text"], callback_data=f"edit_tender_text:{tender_id}")
-        
+        builder.button(text=TEXTS["buttons"]["admin"]["close_without_winner"], callback_data=f"ask_close_empty:{tender_id}")
+
     # Форматируем динамическое число откликов в строке кнопки
     proposals_btn_text = TEXTS["buttons"]["admin"]["proposals_count"].format(count=proposals_count)
     builder.button(text=proposals_btn_text, callback_data=f"view_proposals:{tender_id}:1")
@@ -154,4 +155,11 @@ def get_participate_keyboard(tender_id: int, bot_username: str) -> InlineKeyboar
 def get_cancel_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.button(text=TEXTS["buttons"]["common"]["cancel"], callback_data="cancel_tender_edit")
+    return builder.as_markup()
+
+def get_confirm_close_empty_keyboard(tender_id: int) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(text=TEXTS["buttons"]["admin"]["confirm_close_empty"], callback_data=f"confirm_close_empty:{tender_id}")
+    builder.button(text=TEXTS["buttons"]["admin"]["cancel_winner"], callback_data=f"view_tender:{tender_id}")
+    builder.adjust(1)
     return builder.as_markup()

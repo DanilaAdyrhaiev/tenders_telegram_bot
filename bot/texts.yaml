@@ -5,142 +5,147 @@ buttons:
   common:
     back: "⬅️ Назад"
     back_to_menu: "🔙 В меню"
-    cancel: "❌ Отмена"
+    cancel: "❌ Скасувати"
   
   admin:
-    users_menu: "👤 Участники"
-    tenders_menu: "📢 Тендеры"
-    active_tenders: "📄 Активные тендеры"
-    all_tenders: "🗂️ Все тендеры"
-    create_tender: "📝 Создать тендер"
-    edit_text: "✏️ Изменить текст"
-    proposals_count: "💬 Предложения ({count})"
-    choose_winner: "🏆 Выбрать победителем"
-    confirm_winner: "✅ Да, закрыть тендер"
-    cancel_winner: "❌ Нет, отмена"
-    confirm: "✅ Подтвердить"
-    ban: "🚫 Забанить"
-    unban: "🟢 Разбанить"
-    back_to_users: "⬅️ К списку участников"
-    back_to_tender: "⬅️ Назад к тендеру"
-    rename_user: "✏️ Изменить имя"
+    users_menu: "👤 Учасники"
+    tenders_menu: "📢 Тендери"
+    active_tenders: "📄 Активні тендери"
+    all_tenders: "🗂️ Усі тендери"
+    create_tender: "📝 Створити тендер"
+    edit_text: "✏️ Змінити текст"
+    proposals_count: "💬 Пропозиції ({count})"
+    choose_winner: "🏆 Обрати переможцем"
+    confirm_winner: "✅ Так, закрити тендер"
+    cancel_winner: "❌ Ні, скасувати"
+    confirm: "✅ Підтвердити"
+    ban: "🚫 Заблокувати"
+    unban: "🟢 Розблокувати"
+    back_to_users: "⬅️ До списку учасників"
+    back_to_tender: "⬅️ Назад до тендеру"
+    rename_user: "✏️ Змінити ім'я"
+    close_without_winner: "🔴 Закрити без переможця"
+    confirm_close_empty: "✅ Так, закрити тендер"
 
   root:
-    users_menu: "👥 Участники"
-    make_admin: "⬆️ Сделать админом"
-    remove_admin: "⬇️ Забрать админку"
-    download_db: "📥 Скачать БД"
+    users_menu: "👥 Учасники"
+    make_admin: "⬆️ Зробити адміном"
+    remove_admin: "⬇️ Забрати адмінку"
+    download_db: "📥 Завантажити БД"
     
-
   user:
-    make_proposal: "✍️ Сделать предложение"
-    participate: "🙋 Участвовать"
+    make_proposal: "✍️ Зробити пропозицію"
+    participate: "🙋 Взяти участь"
 
 # ==========================================
 # СООБЩЕНИЯ (Хэндлеры)
 # ==========================================
 messages:
   common:
-    action_cancelled: "❌ Действие отменено."
-    no_rights: "❌ У вас нет прав для этого действия."
-    user_not_found: "❌ Пользователь не найден в базе."
-    banned_alert: "Вы заблокированы в этом боте."
-    default_nickname: "Пользователь #{count}"
+    action_cancelled: "❌ Дію скасовано."
+    no_rights: "❌ У вас немає прав для цієї дії."
+    user_not_found: "❌ Користувача не знайдено в базі."
+    banned_alert: "Вас заблоковано в цьому боті."
+    default_nickname: "Користувач #{count}"
 
   profile:
-    status_active: "✅ Активен"
-    status_banned: "❌ Заблокирован"
-    "yes": "Да"
-    "no": "Нет"
-    title_normal: "👤 <b>Профиль участника</b>"
-    title_updated: "👤 <b>Профиль участника (Статус обновлен!)</b>"
+    status_active: "✅ Активний"
+    status_banned: "❌ Заблокований"
+    "yes": "Так"
+    "no": "Ні"
+    title_normal: "👤 <b>Профіль учасника</b>"
+    title_updated: "👤 <b>Профіль учасника (Статус оновлено!)</b>"
     body: |
       {title}
 
-      • <b>Никнейм:</b> {nickname}
+      • <b>Нікнейм:</b> {nickname}
       • <b>Telegram ID:</b> <code>{telegram_id}</code>
       • <b>Юзернейм:</b> @{username}
-      • <b>Администратор:</b> {is_admin}
+      • <b>Адміністратор:</b> {is_admin}
       • <b>Статус:</b> {status}
-    no_username: "отсутствует"
+    no_username: "відсутній"
 
   admin:
-    users_empty: "👤 В базе пока нет других участников."
-    users_list: "👥 <b>Список участников проекта:</b>\nВыберите пользователя для управления:"
-    user_banned_alert: "Пользователь заблокирован!"
-    user_unbanned_alert: "Пользователь разблокирован!"
-    tenders_menu: "📢 <b>Управление тендерами</b>\n\nВыберите нужное действие в меню ниже:"
-    tenders_active_empty: "📭 Активных тендеров нет."
-    tenders_active_list: "🟢 Список активных тендеров:"
-    tenders_all_empty: "📭 В базе пока нет тендеров."
-    tenders_all_list: "🗂 Список всех тендеров:"
-    tender_not_found: "❌ Тендер не найден!"
-    tender_closed_error: "❌ Тендер уже закрыт!"
-    status_active: "🟢 Активен"
-    status_closed: "🔴 Закрыт"
-    winner_text_html: "\n<b>🏆 Победитель:</b> {nickname}"
-    enter_new_name: "📝 Введите новое имя для пользователя <b>{nickname}</b>:"
-    rename_success: "✅ Имя пользователя успешно изменено на <b>{nickname}</b>!"
-    rename_error: "❌ Ошибка: пользователь не найден."
+    users_empty: "👤 У базі поки немає інших учасників."
+    users_list: "👥 <b>Список учасників проєкту:</b>\nОберіть користувача для керування:"
+    user_banned_alert: "Користувача заблоковано!"
+    user_unbanned_alert: "Користувача розблоковано!"
+    tenders_menu: "📢 <b>Керування тендерами</b>\n\nОберіть потрібну дію в меню нижче:"
+    tenders_active_empty: "📭 Активних тендерів немає."
+    tenders_active_list: "🟢 Список активних тендерів:"
+    tenders_all_empty: "📭 У базі поки немає тендерів."
+    tenders_all_list: "🗂 Список усіх тендерів:"
+    tender_not_found: "❌ Тендер не знайдено!"
+    tender_closed_error: "❌ Тендер уже закрито!"
+    status_active: "🟢 Активний"
+    status_closed: "🔴 Закритий"
+    winner_text_html: "\n<b>🏆 Переможець:</b> {nickname}"
+    enter_new_name: "📝 Введіть нове ім'я для користувача <b>{nickname}</b>:"
+    rename_success: "✅ Ім'я користувача успішно змінено на <b>{nickname}</b>!"
+    rename_error: "❌ Помилка: користувача не знайдено."
     
     tender_card_html: |
       📄 <b>Тендер #{tender_id}</b>
 
       <b>Статус:</b> {status}
-      <b>Откликов:</b> {proposals_count}{winner_text}
+      <b>Відгуків:</b> {proposals_count}{winner_text}
 
-      <b>Описание:</b>
+      <b>Опис:</b>
       {text}
 
-    enter_new_text: "📝 Хорошо, введите новый измененный текст для тендера #{tender_id}:"
-    enter_tender_text: "📝 Введите текст для тендера:"
-    preview_publication: "📋 Проверьте информацию перед публикацией:\n\n{text}"
-    publish_success: "✅ Тендер №{tender_id} успешно опубликован в канале!"
-    publish_error: "❌ Ошибка публикации в канал: {error}"
-    publish_cancelled: "❌ Публикация тендера отменена."
-    edit_success: "✅ Текст тендера #{tender_id} успешно обновлен!"
-    edit_channel_error: "⚠️ Текст в базе обновлен, но пост в канале изменить не удалось (возможно, он был удален): {error}"
+    enter_new_text: "📝 Добре, введіть новий змінений текст для тендеру #{tender_id}:"
+    enter_tender_text: "📝 Введіть текст для тендеру:"
+    preview_publication: "📋 Перевірте інформацію перед публікацією:\n\n{text}"
+    publish_success: "✅ Тендер №{tender_id} успішно опубліковано в каналі!"
+    publish_error: "❌ Помилка публікації в канал: {error}"
+    publish_cancelled: "❌ Публікацію тендеру скасовано."
+    edit_success: "✅ Текст тендеру #{tender_id} успішно оновлено!"
+    edit_channel_error: "⚠️ Текст у базі оновлено, але допис у каналі змінити не вдалося (можливо, його було видалено): {error}"
 
-    proposals_empty: "📭 Пока нет предложений."
-    proposals_list: "💬 <b>Предложения по тендеру #{tender_id}</b>\nВыберите участника для просмотра:"
-    proposal_load_error: "❌ Ошибка загрузки предложения."
+    proposals_empty: "📭 Поки немає пропозицій."
+    proposals_list: "💬 <b>Пропозиції щодо тендеру #{tender_id}</b>\nОберіть учасника для перегляду:"
+    proposal_load_error: "❌ Помилка завантаження пропозиції."
     
     proposal_view: |
-      👤 <b>Участник:</b> {nickname} (@{username})
+      👤 <b>Учасник:</b> {nickname} (@{username})
 
-      <b>Текст предложения:</b>
+      <b>Текст пропозиції:</b>
       {text}
 
-    ask_winner: "❓ <b>Вы уверены</b>, что хотите выбрать этого участника победителем и закрыть тендер?"
+    ask_winner: "❓ <b>Ви впевнені</b>, що хочете обрати цього учасника переможцем і закрити тендер?"
+    ask_close_empty: "❓ <b>Ви впевнені</b>, що хочете закрити тендер #{tender_id} без обрання переможця?"
+    tender_closed_empty: |
+      ✅ <b>Тендер #{tender_id} закрито без переможця!</b>
+      Допис видалено з каналу.
     tender_successfully_closed: |
-      ✅ <b>Тендер #{tender_id} закрыт!</b>
-      Победитель: {nickname}
-      Пост удален из канала.
-      Рассылка уведомлений запущена.
+      ✅ <b>Тендер #{tender_id} закрито!</b>
+      Переможець: {nickname}
+      Допис видалено з каналу.
+      Розсилку повідомлень запущено.
 
   root:
-    root_granted: "Вы получили root права"
-    admin_granted_alert: "✅ Права администратора выданы!"
-    admin_revoked_alert: "❌ Права администратора сняты!"
-    notify_made_admin: "🎉 Вы были назначены администратором бота! Теперь вам доступно новое меню."
-    notify_removed_admin: "ℹ️ Ваши права администратора были отозваны."
-    ban_alert: "❌ Пользователь заблокирован!"
-    unban_alert: "✅ Пользователь разблокирован!"
-    db_downloaded: "📁 <b>Файл базы данных (database.json)</b>"
-    db_downloaded_excel: "📊 <b>Excel-версия базы данных</b>\nОтлично подходит для анализа и построения сводных таблиц."
-    db_download_error: "❌ Ошибка при скачивании базы данных."
-    db_not_found: "❌ Файл базы данных не найден."
+    root_granted: "Ви отримали root права"
+    admin_granted_alert: "✅ Права адміністратора видано!"
+    admin_revoked_alert: "❌ Права адміністратора знято!"
+    notify_made_admin: "🎉 Вас призначено адміністратором бота! Тепер вам доступне нове меню."
+    notify_removed_admin: "ℹ️ Ваші права адміністратора було відкликано."
+    ban_alert: "❌ Користувача заблоковано!"
+    unban_alert: "✅ Користувача розблоковано!"
+    db_downloaded: "📁 <b>Файл бази даних (database.json)</b>"
+    db_downloaded_excel: "📊 <b>Excel-версія бази даних</b>\nЧудово підходить для аналізу та побудови зведених таблиць."
+    db_download_error: "❌ Помилка під час завантаження бази даних."
+    db_not_found: "❌ Файл бази даних не знайдено."
 
   user:
-    start_default: "Добрый день, {nickname}!\nЯ бот для участия в тендерах."
-    invalid_link: "❌ Неверная ссылка на тендер."
-    tender_not_found: "❌ Этот тендер не найден или уже закрыт."
+    start_default: "Доброго дня, {nickname}!\nЯ бот для участі в тендерах."
+    invalid_link: "❌ Неправильне посилання на тендер."
+    tender_not_found: "❌ Цей тендер не знайдено або вже закрито."
     
-    proposals_header: "\n\n💬 <b>Текущие предложения других участников:</b>\n"
-    proposal_item: "👤 Участник #{user_id}: {text}\n"
-    proposals_empty: "\n\n📭 Пока нет предложений. Будьте первым!"
-    ask_proposal_text: "📝 Напишите ваше предложение (или сумму) одним сообщением:"
-    proposal_sent: "✅ Ваше предложение успешно отправлено!"
+    proposals_header: "\n\n💬 <b>Поточні пропозиції інших учасників:</b>\n"
+    proposal_item: "👤 Учасник #{user_id}: {text}\n"
+    proposals_empty: "\n\n📭 Поки немає пропозицій. Будьте першим!"
+    ask_proposal_text: "📝 Напишіть вашу пропозицію (або суму) одним повідомленням:"
+    proposal_sent: "✅ Вашу пропозицію успішно надіслано!"
     
     channel_post: |
       💼 <b>Тендер №{tender_id}</b>
@@ -154,27 +159,27 @@ messages:
 # ==========================================
 notifications:
   new_proposal: |
-    🔔 <b>Новое предложение в тендере #{tender_id}!</b>
+    🔔 <b>Нова пропозиція в тендері #{tender_id}!</b>
 
-    👤 Участник <code>{user_id}</code> предложил:
+    👤 Учасник <code>{user_id}</code> запропонував:
     {text}
 
-    Вы можете перебить ставку!
+    Ви можете перебити ставку!
 
   admin_addition: |
 
-    ℹ️ <b>Информация об участнике:</b>
-    👤 Имя: {nickname}{username_str}
+    ℹ️ <b>Інформація про учасника:</b>
+    👤 Ім'я: {nickname}{username_str}
     🆔 ID: <code>{telegram_id}</code>
     
   winner_congrats: |
-    🎉 <b>Поздравляем!</b>
+    🎉 <b>Вітаємо!</b>
 
-    Ваше предложение по тендеру <b>#{tender_id}</b> было выбрано победным!
-    В ближайшее время администратор свяжется с вами для обсуждения деталей.
+    Ваша пропозиція щодо тендеру <b>#{tender_id}</b> була обрана переможною!
+    Найближчим часом адміністратор зв'яжеться з вами для обговорення деталей.
     
   loser_notify: |
-    🔔 <b>Тендер #{tender_id} завершен!</b>
+    🔔 <b>Тендер #{tender_id} завершено!</b>
 
-    К сожалению, в этот раз заказчик выбрал другого исполнителя.
-    Не расстраивайтесь, впереди еще много интересных проектов!
+    На жаль, цього разу замовник обрав іншого виконавця.
+    Не засмучуйтесь, попереду ще багато цікавих проєктів!

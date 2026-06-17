@@ -14,7 +14,7 @@ from src.keyboards.admin.inline import (
     get_confirm_winner_keyboard, get_proposal_view_keyboard, get_proposals_list_keyboard, 
     get_user_manage_keyboard, get_users_list_keyboard, get_cancel_keyboard, 
     get_participate_keyboard, get_tenders_menu, get_tenders_list_keyboard, 
-    get_tender_manage_keyboard
+    get_tender_manage_keyboard, get_confirm_close_empty_keyboard
 )
 from src.utils.filters import TargetUserFilter, isAdminFilter
 from src.states.admin_states import CreateTender, EditTender, EditUser
@@ -47,9 +47,21 @@ async def process_view_user(callback: types.CallbackQuery, target_user: User):
     await callback.answer()
 
 @router.callback_query(F.data.startswith("toggle_ban:"), isAdminFilter(), TargetUserFilter())
-async def process_toggle_ban(callback: types.CallbackQuery, target_user: User):
+async def process_toggle_ban(callback: types.CallbackQuery, target_user: User, bot: Bot):
     target_user.is_banned = not target_user.is_banned
     await save_user(target_user)
+
+    try:
+        if target_user.is_banned:
+            # Викидаємо з каналу
+            await bot.ban_chat_member(chat_id=settings.CHANNEL_ID, user_id=target_user.telegram_id)
+        else:
+            # Знімаємо бан у каналі (але користувачу доведеться зайти туди самостійно за посиланням)
+            await bot.unban_chat_member(chat_id=settings.CHANNEL_ID, user_id=target_user.telegram_id, only_if_banned=True)
+    except Exception as e:
+        logger.error(f"Не вдалося змінити статус користувача {target_user.telegram_id} у каналі: {e}")
+
+
     alert_msg = TEXTS["messages"]["admin"]["user_banned_alert"] if target_user.is_banned else TEXTS["messages"]["admin"]["user_unbanned_alert"]
     await callback.answer(alert_msg)
     
@@ -160,6 +172,7 @@ async def view_specific_tender(callback: types.CallbackQuery):
         reply_markup=get_tender_manage_keyboard(tender.tender_id, proposals_count, tender.is_active),
         parse_mode="HTML"
     )
+    
 
 @router.callback_query(F.data.startswith("edit_tender_text:"), isAdminFilter())
 async def process_edit_existing_tender(callback: types.CallbackQuery, state: FSMContext):
@@ -304,7 +317,42 @@ async def confirm_tender_winner(callback: types.CallbackQuery, bot: Bot):
             except Exception:
                 pass
 
-@router.callback_query(F.data == "create_tender")
+@router.callback_query(F.data.startswith("ask_close_empty:"), isAdminFilter())
+async def ask_close_empty_tender(callback: types.CallbackQuery):
+    tender_id = int(callback.data.split(":")[1])
+    await callback.message.edit_text(
+        TEXTS["messages"]["admin"]["ask_close_empty"].format(tender_id=tender_id),
+        reply_markup=get_confirm_close_empty_keyboard(tender_id),
+        parse_mode="HTML"
+    )
+
+@router.callback_query(F.data.startswith("confirm_close_empty:"), isAdminFilter())
+async def confirm_close_empty_tender(callback: types.CallbackQuery, bot: Bot):
+    tender_id = int(callback.data.split(":")[1])
+    tender = await get_tender(tender_id)
+
+    if not tender.is_active:
+        await callback.answer(TEXTS["messages"]["admin"]["tender_closed_error"], show_alert=True)
+        return
+
+    # Закриваємо тендер, переможець залишається None
+    tender.is_active = False
+    await save_tender(tender)
+
+    # Видаляємо пост із каналу
+    if tender.channel_message_id:
+        try:
+            await bot.delete_message(chat_id=settings.CHANNEL_ID, message_id=tender.channel_message_id)
+        except Exception:
+            pass
+
+    await callback.message.edit_text(
+        TEXTS["messages"]["admin"]["tender_closed_empty"].format(tender_id=tender_id),
+        reply_markup=get_tender_manage_keyboard(tender_id, len(tender.proposals) if tender.proposals else 0, False),
+        parse_mode="HTML"
+    )
+
+@router.callback_query(F.data == "create_tender", isAdminFilter())
 async def admin_publishing_tender(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(CreateTender.waiting_for_text)
     await callback.message.edit_text(

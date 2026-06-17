@@ -11,6 +11,7 @@ from src.keyboards.root.inline import get_user_manage_keyboard, get_users_list_k
 from src.keyboards.admin.reply import get_admin_reply_menu
 from src.utils.filters import IsRootFilter, TargetUserFilter
 from src.utils.lexicon import TEXTS
+from src.utils.config import settings
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -68,9 +69,20 @@ async def toggle_admin(callback: types.CallbackQuery, target_user: User, bot: Bo
         logger.error(f"Не удалось отправить уведомление об изменении прав пользователю {target_user.telegram_id}: {e}")
 
 @router.callback_query(F.data.startswith("root_toggle_ban:"), IsRootFilter(), TargetUserFilter())
-async def toggle_ban(callback: types.CallbackQuery, target_user: User):
+async def toggle_ban(callback: types.CallbackQuery, target_user: User, bot: Bot): # <-- Добавили bot: Bot
     target_user.is_banned = not target_user.is_banned
     await save_user(target_user)
+    
+    # --- НОВАЯ ЛОГИКА ДЛЯ ROOT: Удаление из канала ---
+    try:
+        if target_user.is_banned:
+            await bot.ban_chat_member(chat_id=settings.CHANNEL_ID, user_id=target_user.telegram_id)
+        else:
+            await bot.unban_chat_member(chat_id=settings.CHANNEL_ID, user_id=target_user.telegram_id, only_if_banned=True)
+    except Exception as e:
+        logger.error(f"Не удалось изменить статус пользователя {target_user.telegram_id} в канале (Root): {e}")
+    # ------------------------------------------------
+
     alert_msg = TEXTS["messages"]["root"]["ban_alert"] if target_user.is_banned else TEXTS["messages"]["root"]["unban_alert"]
     await callback.answer(alert_msg)
     
